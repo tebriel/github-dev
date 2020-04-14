@@ -19,6 +19,19 @@ resource "azurerm_public_ip" "rivendell" {
   allocation_method   = "Static"
 }
 
+data "azurerm_dns_zone" "dev" {
+  name = "dev.frodux.in"
+  resource_group_name = azurerm_resource_group.github-dev.name
+}
+
+resource "azurerm_dns_a_record" "rivendell" {
+  name = "rivendell"
+  zone_name = data.azurerm_dns_zone.dev.name
+  resource_group_name = azurerm_resource_group.github-dev.name
+  ttl = 60
+  target_resource_id = azurerm_public_ip.rivendell.id
+}
+
 resource "azurerm_network_security_group" "rivendell" {
   name                = "rivendell-sg"
   location            = azurerm_resource_group.github-dev.location
