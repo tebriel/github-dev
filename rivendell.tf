@@ -77,7 +77,7 @@ resource "azurerm_windows_virtual_machine" "rivendell" {
   name                     = "rivendell"
   resource_group_name      = azurerm_resource_group.github-dev.name
   location                 = azurerm_resource_group.github-dev.location
-  size                     = "Standard_DS2_v2"
+  size                     = "Standard_D2S_v3"
   admin_username           = var.admin_username 
   admin_password           = var.admin_password
   license_type             = "Windows_Client"
