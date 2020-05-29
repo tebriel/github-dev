@@ -5,3 +5,7 @@ variable admin_password {
 variable admin_username {
   description = "The username for the admin account"
 }
+
+variable home_ip {
+  description = "The IP of home."
+}

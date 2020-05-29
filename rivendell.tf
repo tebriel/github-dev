@@ -20,16 +20,16 @@ resource "azurerm_public_ip" "rivendell" {
 }
 
 data "azurerm_dns_zone" "dev" {
-  name = "dev.frodux.in"
+  name                = "dev.frodux.in"
   resource_group_name = azurerm_resource_group.github-dev.name
 }
 
 resource "azurerm_dns_a_record" "rivendell" {
-  name = "rivendell"
-  zone_name = data.azurerm_dns_zone.dev.name
+  name                = "rivendell"
+  zone_name           = data.azurerm_dns_zone.dev.name
   resource_group_name = azurerm_resource_group.github-dev.name
-  ttl = 60
-  target_resource_id = azurerm_public_ip.rivendell.id
+  ttl                 = 60
+  target_resource_id  = azurerm_public_ip.rivendell.id
 }
 
 resource "azurerm_network_security_group" "rivendell" {
@@ -78,7 +78,7 @@ resource "azurerm_windows_virtual_machine" "rivendell" {
   resource_group_name      = azurerm_resource_group.github-dev.name
   location                 = azurerm_resource_group.github-dev.location
   size                     = "Standard_D2S_v3"
-  admin_username           = var.admin_username 
+  admin_username           = var.admin_username
   admin_password           = var.admin_password
   license_type             = "Windows_Client"
   enable_automatic_updates = true
