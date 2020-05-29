@@ -20,7 +20,9 @@ resource "azurerm_subnet" "anduril" {
   name                 = "default"
   resource_group_name  = azurerm_resource_group.github-dev.name
   virtual_network_name = azurerm_virtual_network.anduril-dev-vnet.name
-  address_prefix       = "10.0.2.0/24"
+  address_prefixes = [
+    "10.0.2.0/24",
+  ]
 }
 
 resource "azurerm_dns_a_record" "anduril" {
