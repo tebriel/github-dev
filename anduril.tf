@@ -56,6 +56,11 @@ resource "azurerm_network_security_group" "anduril" {
   }
 }
 
+resource "azurerm_network_interface_security_group_association" "anduril" {
+  network_interface_id      = azurerm_network_interface.anduril.id
+  network_security_group_id = azurerm_network_security_group.anduril.id
+}
+
 resource "azurerm_network_security_rule" "anduril-rdp" {
   name                       = "anduril-RDP"
   priority                   = 300
@@ -69,11 +74,6 @@ resource "azurerm_network_security_rule" "anduril-rdp" {
 
   resource_group_name         = azurerm_resource_group.github-dev.name
   network_security_group_name = azurerm_network_security_group.anduril.name
-}
-
-resource "azurerm_network_interface_security_group_association" "example" {
-  network_interface_id      = azurerm_network_interface.anduril.id
-  network_security_group_id = azurerm_network_security_group.anduril.id
 }
 
 resource "azurerm_network_security_rule" "anduril-steam-udp" {
@@ -146,4 +146,10 @@ resource "azurerm_virtual_machine_extension" "nvidia" {
   auto_upgrade_minor_version = true
 
   settings = "{}"
+
+  lifecycle {
+    ignore_changes = [
+      settings,
+    ]
+  }
 }

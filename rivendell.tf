@@ -9,7 +9,9 @@ resource "azurerm_subnet" "default" {
   name                 = "default"
   resource_group_name  = azurerm_resource_group.github-dev.name
   virtual_network_name = azurerm_virtual_network.github-dev-vnet.name
-  address_prefix       = "10.0.2.0/24"
+  address_prefixes = [
+    "10.0.2.0/24",
+  ]
 }
 
 resource "azurerm_public_ip" "rivendell" {
@@ -37,21 +39,29 @@ resource "azurerm_network_security_group" "rivendell" {
   location            = azurerm_resource_group.github-dev.location
   resource_group_name = azurerm_resource_group.github-dev.name
 
-  security_rule {
-    name                       = "RDP"
-    priority                   = 300
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "3389"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
   tags = {
     environment = "Production"
   }
+}
+
+resource "azurerm_network_interface_security_group_association" "rivendell" {
+  network_interface_id      = azurerm_network_interface.rivendell.id
+  network_security_group_id = azurerm_network_security_group.rivendell.id
+}
+
+resource "azurerm_network_security_rule" "rivendell-rdp" {
+  name                       = "rivendell-RDP"
+  priority                   = 350
+  direction                  = "Inbound"
+  access                     = "Allow"
+  protocol                   = "Tcp"
+  source_port_range          = "*"
+  destination_port_range     = "3389"
+  source_address_prefix      = var.home_ip
+  destination_address_prefix = "*"
+
+  resource_group_name         = azurerm_resource_group.github-dev.name
+  network_security_group_name = azurerm_network_security_group.rivendell.name
 }
 
 resource "azurerm_network_interface" "rivendell" {
