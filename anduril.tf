@@ -3,6 +3,7 @@ locals {
 }
 
 resource "azurerm_public_ip" "anduril" {
+  count               = var.anduril_enable
   name                = "anduril-ip"
   location            = local.gpu_location
   resource_group_name = azurerm_resource_group.github-dev.name
@@ -10,6 +11,7 @@ resource "azurerm_public_ip" "anduril" {
 }
 
 resource "azurerm_virtual_network" "anduril-dev-vnet" {
+  count               = var.anduril_enable
   name                = "anduril-dev-vnet"
   address_space       = ["10.0.0.0/16"]
   location            = local.gpu_location
@@ -17,36 +19,40 @@ resource "azurerm_virtual_network" "anduril-dev-vnet" {
 }
 
 resource "azurerm_subnet" "anduril" {
+  count                = var.anduril_enable
   name                 = "default"
   resource_group_name  = azurerm_resource_group.github-dev.name
-  virtual_network_name = azurerm_virtual_network.anduril-dev-vnet.name
+  virtual_network_name = azurerm_virtual_network.anduril-dev-vnet[count.index].name
   address_prefixes = [
     "10.0.2.0/24",
   ]
 }
 
 resource "azurerm_dns_a_record" "anduril" {
+  count               = var.anduril_enable
   name                = "anduril"
   zone_name           = data.azurerm_dns_zone.dev.name
   resource_group_name = azurerm_resource_group.github-dev.name
   ttl                 = 60
-  target_resource_id  = azurerm_public_ip.anduril.id
+  target_resource_id  = azurerm_public_ip.anduril[count.index].id
 }
 
 resource "azurerm_network_interface" "anduril" {
+  count               = var.anduril_enable
   name                = "anduril-nic"
   location            = local.gpu_location
   resource_group_name = azurerm_resource_group.github-dev.name
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.anduril.id
+    subnet_id                     = azurerm_subnet.anduril[count.index].id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.anduril.id
+    public_ip_address_id          = azurerm_public_ip.anduril[count.index].id
   }
 }
 
 resource "azurerm_network_security_group" "anduril" {
+  count               = var.anduril_enable
   name                = "anduril-sg"
   location            = local.gpu_location
   resource_group_name = azurerm_resource_group.github-dev.name
@@ -57,11 +63,13 @@ resource "azurerm_network_security_group" "anduril" {
 }
 
 resource "azurerm_network_interface_security_group_association" "anduril" {
-  network_interface_id      = azurerm_network_interface.anduril.id
-  network_security_group_id = azurerm_network_security_group.anduril.id
+  count                     = var.anduril_enable
+  network_interface_id      = azurerm_network_interface.anduril[count.index].id
+  network_security_group_id = azurerm_network_security_group.anduril[count.index].id
 }
 
 resource "azurerm_network_security_rule" "anduril-rdp" {
+  count                      = var.anduril_enable
   name                       = "anduril-RDP"
   priority                   = 300
   direction                  = "Inbound"
@@ -73,10 +81,11 @@ resource "azurerm_network_security_rule" "anduril-rdp" {
   destination_address_prefix = "*"
 
   resource_group_name         = azurerm_resource_group.github-dev.name
-  network_security_group_name = azurerm_network_security_group.anduril.name
+  network_security_group_name = azurerm_network_security_group.anduril[count.index].name
 }
 
 resource "azurerm_network_security_rule" "anduril-steam-udp" {
+  count             = var.anduril_enable
   name              = "anduril-steam-udp"
   priority          = 400
   direction         = "Inbound"
@@ -91,10 +100,11 @@ resource "azurerm_network_security_rule" "anduril-steam-udp" {
   destination_address_prefix = "*"
 
   resource_group_name         = azurerm_resource_group.github-dev.name
-  network_security_group_name = azurerm_network_security_group.anduril.name
+  network_security_group_name = azurerm_network_security_group.anduril[count.index].name
 }
 
 resource "azurerm_network_security_rule" "anduril-steam-tcp" {
+  count                      = var.anduril_enable
   name                       = "anduril-steam-tcp"
   priority                   = 500
   direction                  = "Inbound"
@@ -106,10 +116,11 @@ resource "azurerm_network_security_rule" "anduril-steam-tcp" {
   destination_address_prefix = "*"
 
   resource_group_name         = azurerm_resource_group.github-dev.name
-  network_security_group_name = azurerm_network_security_group.anduril.name
+  network_security_group_name = azurerm_network_security_group.anduril[count.index].name
 }
 
 resource "azurerm_windows_virtual_machine" "anduril" {
+  count                    = var.anduril_enable
   name                     = "anduril"
   resource_group_name      = azurerm_resource_group.github-dev.name
   location                 = local.gpu_location
@@ -121,7 +132,7 @@ resource "azurerm_windows_virtual_machine" "anduril" {
   provision_vm_agent       = true
 
   network_interface_ids = [
-    azurerm_network_interface.anduril.id,
+    azurerm_network_interface.anduril[count.index].id,
   ]
 
   os_disk {
@@ -138,8 +149,9 @@ resource "azurerm_windows_virtual_machine" "anduril" {
 }
 
 resource "azurerm_virtual_machine_extension" "nvidia" {
+  count                      = var.anduril_enable
   name                       = "NvidiaGpuDriverWindows"
-  virtual_machine_id         = azurerm_windows_virtual_machine.anduril.id
+  virtual_machine_id         = azurerm_windows_virtual_machine.anduril[count.index].id
   publisher                  = "Microsoft.HpcCompute"
   type                       = "NvidiaGpuDriverWindows"
   type_handler_version       = "1.2"

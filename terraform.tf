@@ -1,10 +1,15 @@
 terraform {
-  required_version = ">= 0.12"
+  required_version = ">= 1.1.4"
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "2.92.0"
+    }
+  }
 }
 
 # Configure the Azure Provider
 provider "azurerm" {
-  version = "=2.12.0"
   features {}
 }
 
@@ -19,5 +24,5 @@ terraform {
 
 resource "azurerm_resource_group" "github-dev" {
   name     = "github-dev"
-  location = "East US 2"
+  location = "East US"
 }
