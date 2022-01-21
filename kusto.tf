@@ -17,6 +17,11 @@ resource "azurerm_kusto_cluster" "test" {
     capacity = 1
   }
 
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.test[count.index].id]
+  }
+
   tags = {}
 }
 
@@ -26,4 +31,21 @@ resource "azurerm_kusto_database" "test" {
   resource_group_name = azurerm_resource_group.github-dev.name
   location            = azurerm_resource_group.github-dev.location
   cluster_name        = azurerm_kusto_cluster.test[count.index].name
+}
+
+resource "azurerm_user_assigned_identity" "test" {
+  count               = var.kusto_enable
+  name                = "tebrielkustotestid${count.index}"
+  resource_group_name = azurerm_resource_group.github-dev.name
+  location            = azurerm_resource_group.github-dev.location
+}
+
+data "azurerm_subscription" "primary" {}
+
+data "azurerm_client_config" "test" {}
+
+resource "azurerm_role_assignment" "test-eventhub" {
+  scope                = data.azurerm_subscription.primary.id
+  role_definition_name = "Reader"
+  principal_id         = data.azurerm_client_config.test.object_id
 }

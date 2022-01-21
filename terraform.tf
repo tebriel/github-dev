@@ -6,20 +6,18 @@ terraform {
       version = "2.92.0"
     }
   }
+
+  cloud {
+    organization = "tebriel"
+    workspaces {
+      name = "github-dev"
+    }
+  }
 }
 
 # Configure the Azure Provider
 provider "azurerm" {
   features {}
-}
-
-terraform {
-  backend "azurerm" {
-    resource_group_name  = "terraform"
-    storage_account_name = "tebrielterraformstate"
-    container_name       = "state"
-    key                  = "github-dev.tfstate"
-  }
 }
 
 resource "azurerm_resource_group" "github-dev" {
