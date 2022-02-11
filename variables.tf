@@ -22,5 +22,5 @@ variable "rivendell_enable" {
 
 variable "kusto_enable" {
   description = "If kusto database is enabled"
-  default     = 0
+  default     = 1
 }
